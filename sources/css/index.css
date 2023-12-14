@@ -135,22 +135,49 @@ body{
 .infoB{
     width: fit-content;
     height: 100px;
-    background-color: #fff;
+    display: block;
+    background-color: rgba(255,255,255,.8);
     padding: .625rem;
     box-shadow: 0 0 4px rgba(0,0,0,.15);
-    border-radius: .25rem;
+    border-radius: .5rem;
     position: relative;
     cursor: auto;
 }
 .infoB::after{
     content: "";
     position: absolute;
-    bottom:  -30px;
+    bottom: calc(-40px + 5px);
     left: 0;
     border-bottom: 20px solid transparent;
     border-top: 20px solid #fff;
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
+    z-index: 10;
+}
+.infoB .imgU{
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+.infoB .imgU h4{
+    font-size: .875rem;
+    font-weight: 500;
+    margin: 0 .5rem;
+}
+.infoB p{
+    font-size: .75rem;
+    font-weight: 400;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+}
+.infoB p .statusCorner{
+    width: 5px;
+    height: 5px;
+    margin: 0 5px;
+    display: block;
+    background-color: #00D121;
+    border-radius: 50%;
 }
 
 /*AQUI EMPIEZA EL ASIDE*/

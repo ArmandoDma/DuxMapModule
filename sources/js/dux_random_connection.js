@@ -1,9 +1,13 @@
 let map;
 let permisoUbi = false;
 let inBoxTemp = 
-    `<div class="infoB">
-        <h3>Role: {title}</h3>
-        <p>{desc}</p>
+    `<div class="infoB" id="infoB">
+        <div class="imgU">
+            <img src={img} />
+            <h4>Rol: {Rol}</h4>
+        </div>
+        <p>Status: <br/> <span class="statusCorner"></span> {desc}</p>
+        <p>Name: {name}</p>
     </div>`
 
 window.addEventListener('load', GetMap);
@@ -33,13 +37,12 @@ function getCurrentLocation() {
                     title: 'You',
                     color: '#4d88f9',
                     anchor: new Microsoft.Maps.Point(2,2),
-                });                    
-                
+                });                                    
                 map.entities.push(pin);
 
                 let pinWC = new Microsoft.Maps.Location(25.762037871269943, -100.40887199563257)
                 var cine = new Microsoft.Maps.Pushpin(pinWC, {
-                    icon: 'C:/Users/arman/Downloads/Dux/sources/imgs/heart.png',
+                    icon: 'C:/Users/arman/Downloads/Dux/sources/imgs/hos.png',
                     title: 'Hospital',
                     anchor: new Microsoft.Maps.Point(2, 2)
                 });
@@ -57,36 +60,56 @@ function getCurrentLocation() {
                 })
         
                 map.setView({center: loc, zoom: 16});
-        
+
+                /* arreglos para mostrar en la infobox*/
                 let imgsToUse = [
                     'C:/Users/arman/Downloads/Dux/sources/imgs/p1.png',
                     'C:/Users/arman/Downloads/Dux/sources/imgs/p2.png'
                 ]
-        
+
+                let namesUser = [
+                    'Gabito Ballesteros',
+                    'Junior H',
+                ]
+
+                let rolesUsr = [
+                    'Vendedor',
+                    'Instrumentador',
+                    'Doctor'
+                ]
+                /*fin de arreglos para mostrar en la infobox */
+
                 let randomLocations = addRandomLoc(loc, 2);
         
-                randomLocations.forEach(function (ubi, index) {                   
+                randomLocations.forEach(function (ubi, index) {                                         
                     //generate multiples pushpins near current location
                     let locPointRandom = new Microsoft.Maps.Pushpin(ubi, {
-                        title: `User `+ (index + 1),
+                        title: rolesUsr[index % rolesUsr.length],
+                        subTitle: 'En linea',
                         icon: imgsToUse[index % imgsToUse.length],
-                        anchor: new Microsoft.Maps.Point(2, 2)
-                    });
-        
+                        anchor: new Microsoft.Maps.Point(2, 2)                       
+                    });        
                     map.entities.push(locPointRandom);
 
-                     //creating differents infoboxes for show when you clicked the pushpins
-                     let title = locPointRandom.entity.title;                     
-                     let desc = `<img
-                     src="https://www.bingmapsportal.com/Content/images/poi_custom.png"
-                     align="left" style="margin-right:5px;"/>This is a description with custom
-                     html. <a href="http://bing.com/maps" target="_blank">Link</a>`;
-                     
-                     let infoBox = new Microsoft.Maps.Infobox(ubi, {
-                         htmlContent: inBoxTemp.replace('{title}', title).replace('{desc}', desc)
-                     });
-                     
-                     infoBox.setMap(map);
+                    //object properties variables
+                    let img = imgsToUse[index % imgsToUse.length];
+                    let desc = 'En linea';
+                    let Rol = rolesUsr[index % rolesUsr.length];
+                    let name= namesUser[index % namesUser.length]
+                    
+                    //adding pushpins events
+                    Microsoft.Maps.Events.addHandler(locPointRandom, 'click',() => {  
+                        //creating differents infoboxes for show when you clicked the pushpins                        
+                        let infoBox = new Microsoft.Maps.Infobox(ubi, {   
+                            htmlContent: inBoxTemp.replace('{img}', img).replace('{desc}', desc).replace('{Rol}', Rol).replace('{name}', name)
+                        });
+                        
+                        infoBox.setMap(map);
+                        setTimeout(function(){                            
+                            infoBox.dispose()                        
+                        }, 2000)
+                    })
+
                 });
             }, (error) => {
                 console.error('Has denegado el acceso a tu ubicación, intentalo de nuevo.', error.message);
