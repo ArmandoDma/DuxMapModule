@@ -1,0 +1,226 @@
+:root{
+    --sec-color: #641f17;
+    --prim-color: #e4c05a;
+}
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+body{
+    background-color: #f5f5f5;
+    font-family:'Raleway', sans-serif;
+}
+.app-ct{
+    display: grid;
+    width: 100%;
+    height: 100vh;
+    grid-template-columns: auto 300px;
+    grid-template-rows: 60px auto;
+    background-color: transparent;
+}
+/*EL HEADER VA A AQUÍ*/
+.app-ct .hdr{
+    width: 100%;
+    height: 100%;
+    border-bottom: 1px solid #ddd;
+    grid-row: 1;
+    grid-column: span 2;
+    background-color: #fff;
+}
+.app-ct .hdr .hdr-ct{
+    width: 100%;
+    height: 100%;
+}
+.app-ct .hdr .hdr-ct .hdr-nv{
+    width: 90%;
+    height: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.app-ct .hdr .hdr-ct .hdr-nv ul{
+    width: 100%;
+    height: 100%;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+.app-ct .hdr .hdr-ct .hdr-nv .nviz{
+    justify-content: flex-start;
+}
+.app-ct .hdr .hdr-ct .hdr-nv .nviz li a{
+    color: transparent;
+    background: linear-gradient(to right, var(--sec-color)0% , var(--prim-color)100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    font-weight: 500;
+    font-size: 1.125rem;
+}
+.app-ct .hdr .hdr-ct .hdr-nv .nvdr{
+    justify-content: flex-end;
+}
+.app-ct .hdr .hdr-ct .hdr-nv .nvdr li a{
+    font-weight: 500;
+    font-size: .875rem;
+    padding: .5rem 1rem;
+    border-radius: .25rem;
+    margin: 0 .5rem;
+}
+.app-ct .hdr .hdr-ct .hdr-nv .nvdr li:nth-child(1) a{
+    background-color: var(--prim-color);
+    color: var(--sec-color);
+}
+.app-ct .hdr .hdr-ct .hdr-nv .nvdr li:nth-child(2) a{
+    color: var(--prim-color);
+    background-color: var(--sec-color);
+}
+
+/*AQUI EMPIEZA EL MAIN*/
+.app-ct main{
+    width: 100%;
+    height: auto;
+    grid-column: 1 span;
+    grid-row: 2 span;
+    overflow: hidden;
+    background-color: transparent;
+    cursor: grab;
+    position: relative;
+}
+.app-ct main .map{
+    width: 100%;
+    position: relative;
+    height: 100%;
+}
+.app-ct main .overmap{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    z-index: 30000;
+    bottom: calc(10% - 5px);
+    right: calc(5% - 30px);
+}
+.app-ct main .overmap button:nth-child(1){
+    padding: 1rem;
+    border-radius: 50%;
+    transform: scale(.9);
+    margin: .125rem .5rem;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,.15);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: #4d88f9;
+    font-size: 1.5rem;
+}
+.app-ct main .overmap button:nth-child(2){
+    padding: 1rem;
+    border-radius: 50%;
+    margin: .5rem;
+    border: none;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,.15);
+    cursor: pointer;
+    color: #4d88f9;
+    font-size: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center
+}
+.infoB{
+    width: 200px;
+    height: 200px;
+    background-color: #fff;
+    padding: .625rem;
+    box-shadow: 0 0 4px rgba(0,0,0,.15);
+    border-radius: .25rem;
+    position: relative;
+    cursor: auto;
+}
+.infoB::after{
+    content: "";
+    position: absolute;
+    bottom: calc(-100% - 100px);
+    border-bottom: 20px solid transparent;
+    border-top: 20px solid #fff;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    box-shadow: 0 0 4px rgba(0,0,0,.15);
+}
+
+/*AQUI EMPIEZA EL ASIDE*/
+.app-ct aside{
+    width: 100%;
+    background-color: #fff;
+    height: auto;
+    grid-column: 2;
+    grid-row: span 2;
+    border-left: 1px solid #ddd;
+    overflow: hidden;
+}
+.app-ct aside .form{
+    width: 90%;
+    margin: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+.app-ct aside .form .slct{
+    width: 100%;
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+}
+.app-ct aside .form .slct label{
+    margin-bottom: .75rem;
+}
+.app-ct aside .form .slct select{
+    width: 100%;
+    padding: .625rem;
+    outline: none;
+    border: 1px solid #ddd;
+    font-family: inherit;
+    border-radius: .25rem;
+    background-color: #f5f5f5;
+}
+.app-ct aside .form .slct:nth-child(5){
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.app-ct aside .form .slct:nth-child(5) button{
+    width: calc(100% / 2 - 10px);
+    margin: 0 5px;
+    cursor: pointer;
+    font-family: inherit;
+    padding: .625rem;
+    border: none;
+    font-weight: 500;
+    border-radius: .25rem;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+.app-ct aside .form .slct:nth-child(5) button:nth-child(1){
+    background-color: var(--prim-color);
+    color: var(--sec-color);
+}
+.app-ct aside .form .slct:nth-child(5) button:nth-child(2){
+    background-color: var(--sec-color);
+    color: var(--prim-color);
+    text-indent: -.5rem;
+}
+.app-ct aside .form .slct:nth-child(5) button i{
+    font-size: 1.25rem;
+    margin: 0 .5rem;
+    text-indent: -.875rem;
+}
