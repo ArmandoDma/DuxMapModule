@@ -2,7 +2,7 @@ let map;
 let permisoUbi = false;
 let inBoxTemp = 
     `<div class="infoB">
-        <h3>{title}</h3>
+        <h3>Role: {title}</h3>
         <p>{desc}</p>
     </div>`
 

@@ -133,8 +133,8 @@ body{
     justify-content: center
 }
 .infoB{
-    width: 200px;
-    height: 200px;
+    width: fit-content;
+    height: 100px;
     background-color: #fff;
     padding: .625rem;
     box-shadow: 0 0 4px rgba(0,0,0,.15);
@@ -145,12 +145,12 @@ body{
 .infoB::after{
     content: "";
     position: absolute;
-    bottom: calc(-100% - 100px);
+    bottom:  -30px;
+    left: 0;
     border-bottom: 20px solid transparent;
     border-top: 20px solid #fff;
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
-    box-shadow: 0 0 4px rgba(0,0,0,.15);
 }
 
 /*AQUI EMPIEZA EL ASIDE*/
