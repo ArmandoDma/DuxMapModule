@@ -1,10 +1,10 @@
-let map;
+let map, results, queryURL;
 let permisoUbi = false;
 let inBoxTemp = 
-    `<div class="infoB" id="infoB">
-        <div class="imgU">
-            <img src={img} />
-            <h4>Rol: {Rol}</h4>
+`<div class="infoB" id="infoB">
+<div class="imgU">
+<img src={img} />
+<h4>Rol: {Rol}</h4>
         </div>
         <p>Status: <br/> <span class="statusCorner"></span> {desc}</p>
         <p>Name: {name}</p>
@@ -21,6 +21,42 @@ function GetMap(){
         showLocateMeButton: false,
         showMapTypeSelector: false
     });
+    
+    Microsoft.Maps.loadModule('Microsoft.Maps.SpatialDataService', function(){
+        getNearbyPlaces()
+    })
+}
+
+function getNearbyPlaces(){
+    let entityTypeID = 8060;
+    results = 20;
+    queryURL = `http://spatial.virtualearth.net/REST/v1/data/Microsoft/PointsOfInterest?spatialFilter=nearby(25.762037871269943,-100.40887199563257,5)&$filter=EntityTypeID%20eq%20'${entityTypeID}'&$select=EntityID,DisplayName,Latitude,Longitude,__Distance&$top=${results}&$format=json&key=ArqG4VUXzrsxfVPNZDS7pu3DCTbBXf4NazO7xFtayC1EqP4PcnG4rn1XskILNby5`;
+
+    const queryOptions = {
+        queryUrl: queryURL,
+        top: results,
+        inlineCount: true,
+        spatialFilter: {
+            spatialFilterType: 'nearby',
+            location: map.getCenter(),
+            radius: 100
+        }
+    }
+    console.log(queryOptions.queryUrl)
+    Microsoft.Maps.SpatialDataService.QueryAPIManager.search(queryOptions, map, function (data) {            
+        if (data && data.length > 0) {
+            data.forEach(function(result) {
+                const metadata = result.metadata;
+                console.log(metadata)
+                const hospitalLoc = new Microsoft.Maps.Location(metadata.Latitude, metadata.Longitude)
+                const hosPin = new Microsoft.Maps.Pushpin(hospitalLoc, {title: metadata.DisplayName})
+                map.entities.push(hosPin)
+
+            })
+        } else {
+            console.log('No se encontraron hospitales cercanos.');
+        }
+    });    
 }
 
 function getCurrentLocation() {        
@@ -59,7 +95,7 @@ function getCurrentLocation() {
                          map.entities.push(poly);                     
                 })
         
-                map.setView({center: loc, zoom: 16});
+                map.setView({center: loc, zoom: 16});                                
 
                 /* arreglos para mostrar en la infobox*/
                 let imgsToUse = [
@@ -142,4 +178,3 @@ function addRandomLoc(center, count){
 
     return randomLocations;
 }
-
