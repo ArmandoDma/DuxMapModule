@@ -8,10 +8,29 @@ let inBoxTemp =
 </div>
 <p>Status: <br/> <span class="statusCorner"></span> {desc}</p>
 <p>Name: {name}</p>
-</div>`
+</div>`;
+/* arreglos para mostrar en la infobox*/
+let imgsToUse = [
+    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p1.png',
+    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p2.png'
+]
 
-window.addEventListener('load', GetMap);
+let namesUser = [
+    'Gabito Ballesteros',
+    'Junior H',
+]
 
+let rolesUsr = [
+    'Vendedor',
+    'Instrumentador',
+    'Doctor'
+]
+/*fin de arreglos para mostrar en la infobox */
+
+window.addEventListener('load', () => {
+    GetMap()
+    getSlctValue()
+});
 
 function GetMap(){
     map = new Microsoft.Maps.Map('#Map',{
@@ -28,7 +47,7 @@ let sdsDataSourceUrl = 'http://spatial.virtualearth.net/REST/v1/data/Microsoft/P
 function getCurrentLocation() {        
     if(!permisoUbi){
         if(navigator.geolocation){           
-            navigator.geolocation.watchPosition((pos) => {                  
+            navigator.geolocation.getCurrentPosition((pos) => {                  
                 let loc = new Microsoft.Maps.Location(
                     pos.coords.latitude,
                     pos.coords.longitude
@@ -42,25 +61,7 @@ function getCurrentLocation() {
                 });                                    
                 map.entities.push(pin);
         
-                map.setView({center: loc, zoom: 16});                                
-
-                /* arreglos para mostrar en la infobox*/
-                let imgsToUse = [
-                    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p1.png',
-                    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p2.png'
-                ]
-
-                let namesUser = [
-                    'Gabito Ballesteros',
-                    'Junior H',
-                ]
-
-                let rolesUsr = [
-                    'Vendedor',
-                    'Instrumentador',
-                    'Doctor'
-                ]
-                /*fin de arreglos para mostrar en la infobox */
+                map.setView({center: loc, zoom: 16});                                                
 
                 let randomLocations = addRandomLoc(loc, 2);
         
@@ -97,7 +98,7 @@ function getCurrentLocation() {
                     function () {
                         getNearByLocations(loc);
                     }
-                ); 
+                );                   
             }, (error) => {
                 console.error('Has denegado el acceso a tu ubicación, intentalo de nuevo.', error.message);
                 permisoUbi = false;
@@ -168,4 +169,19 @@ function addRandomLoc(center, count){
     }
 
     return randomLocations;
+}
+
+//getting and adding options from the select-boxes
+function getSlctValue(){
+    let slcts = document.querySelectorAll('#slins');    
+    slcts.forEach((boxes,index) => {    
+        boxes.innerHTML = ''; 
+        namesUser.forEach((name) => {
+            let elmt = document.createElement('option')    
+            elmt.innerHTML = name;        
+            elmt.setAttribute('value', name)            
+            boxes.appendChild(elmt)        
+        })
+            
+    })
 }
