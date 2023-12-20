@@ -5,10 +5,10 @@ let inBoxTemp =
 <div class="imgU">
 <img src={img} />
 <h4>Rol: {Rol}</h4>
-        </div>
-        <p>Status: <br/> <span class="statusCorner"></span> {desc}</p>
-        <p>Name: {name}</p>
-    </div>`
+</div>
+<p>Status: <br/> <span class="statusCorner"></span> {desc}</p>
+<p>Name: {name}</p>
+</div>`
 
 window.addEventListener('load', GetMap);
 
@@ -20,87 +20,34 @@ function GetMap(){
         center: new Microsoft.Maps.Location(25.762037871269943, -100.40887199563257),
         showLocateMeButton: false,
         showMapTypeSelector: false
-    });
-    
-    Microsoft.Maps.loadModule('Microsoft.Maps.SpatialDataService', function(){
-        getNearbyPlaces()
-    })
+    });            
 }
 
-function getNearbyPlaces(){
-    let entityTypeID = 8060;
-    results = 20;
-    queryURL = `http://spatial.virtualearth.net/REST/v1/data/Microsoft/PointsOfInterest?spatialFilter=nearby(25.762037871269943,-100.40887199563257,5)&$filter=EntityTypeID%20eq%20'${entityTypeID}'&$select=EntityID,DisplayName,Latitude,Longitude,__Distance&$top=${results}&$format=json&key=ArqG4VUXzrsxfVPNZDS7pu3DCTbBXf4NazO7xFtayC1EqP4PcnG4rn1XskILNby5`;
-
-    const queryOptions = {
-        queryUrl: queryURL,
-        top: results,
-        inlineCount: true,
-        spatialFilter: {
-            spatialFilterType: 'nearby',
-            location: map.getCenter(),
-            radius: 100
-        }
-    }
-    console.log(queryOptions.queryUrl)
-    Microsoft.Maps.SpatialDataService.QueryAPIManager.search(queryOptions, map, function (data) {            
-        if (data && data.length > 0) {
-            data.forEach(function(result) {
-                const metadata = result.metadata;
-                console.log(metadata)
-                const hospitalLoc = new Microsoft.Maps.Location(metadata.Latitude, metadata.Longitude)
-                const hosPin = new Microsoft.Maps.Pushpin(hospitalLoc, {title: metadata.DisplayName})
-                map.entities.push(hosPin)
-
-            })
-        } else {
-            console.log('No se encontraron hospitales cercanos.');
-        }
-    });    
-}
+let sdsDataSourceUrl = 'http://spatial.virtualearth.net/REST/v1/data/Microsoft/PointsOfInterest?key=ArqG4VUXzrsxfVPNZDS7pu3DCTbBXf4NazO7xFtayC1EqP4PcnG4rn1XskILNby5&$format=json';
 
 function getCurrentLocation() {        
     if(!permisoUbi){
-        if(navigator.geolocation){
-            navigator.geolocation.getCurrentPosition((pos) => {
+        if(navigator.geolocation){           
+            navigator.geolocation.watchPosition((pos) => {                  
                 let loc = new Microsoft.Maps.Location(
                     pos.coords.latitude,
                     pos.coords.longitude
                 );
-                 
+
                 //pins created
                 let pin = new Microsoft.Maps.Pushpin(loc,{     
                     title: 'You',
                     color: '#4d88f9',
-                    anchor: new Microsoft.Maps.Point(2,2),
+                    anchor: new Microsoft.Maps.Point(2,2)
                 });                                    
                 map.entities.push(pin);
-
-                let pinWC = new Microsoft.Maps.Location(25.762037871269943, -100.40887199563257)
-                var cine = new Microsoft.Maps.Pushpin(pinWC, {
-                    icon: 'C:/Users/arman/Downloads/Dux/sources/imgs/hos.png',
-                    title: 'Hospital',
-                    anchor: new Microsoft.Maps.Point(2, 2)
-                });
-                //Add the pushpin to the map.
-                map.entities.push(cine);
-
-                //giving a value to the accuracy property and rendering a radio transparent circle with a pushpin.
-                let coordsAccuracy = 100;            
-                Microsoft.Maps.loadModule("Microsoft.Maps.SpatialMath", function (){
-                    let path = Microsoft.Maps.SpatialMath.getRegularPolygon(pinWC,
-                        coordsAccuracy, 36, Microsoft.Maps.SpatialMath.Meters);
-        
-                    let poly = new Microsoft.Maps.Polygon(path);
-                         map.entities.push(poly);                     
-                })
         
                 map.setView({center: loc, zoom: 16});                                
 
                 /* arreglos para mostrar en la infobox*/
                 let imgsToUse = [
-                    'C:/Users/arman/Downloads/Dux/sources/imgs/p1.png',
-                    'C:/Users/arman/Downloads/Dux/sources/imgs/p2.png'
+                    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p1.png',
+                    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p2.png'
                 ]
 
                 let namesUser = [
@@ -144,9 +91,13 @@ function getCurrentLocation() {
                         setTimeout(function(){                            
                             infoBox.dispose()                        
                         }, 2000)
-                    })
-
+                    })                                           
                 });
+                Microsoft.Maps.loadModule('Microsoft.Maps.SpatialDataService', 
+                    function () {
+                        getNearByLocations(loc);
+                    }
+                ); 
             }, (error) => {
                 console.error('Has denegado el acceso a tu ubicación, intentalo de nuevo.', error.message);
                 permisoUbi = false;
@@ -157,6 +108,46 @@ function getCurrentLocation() {
         }
     }
 }
+
+function getNearByLocations(loc) {       
+    let queryOptions = { 
+        queryUrl: sdsDataSourceUrl, 
+        spatialFilter: { 
+            spatialFilterType: 'nearby', 
+            location: loc, 
+            radius: 25 
+        }, 
+        filter: new 
+        Microsoft.Maps.SpatialDataService.Filter('EntityTypeID','eq',8060)  
+    }; 
+    Microsoft.Maps.SpatialDataService.QueryAPIManager.search(queryOptions, map, function (data, response) { 
+        if (data && data.length > 0) {
+            data.forEach(function(result) {                    
+                const metadata = result.metadata;                
+                const hospitalLoc = new Microsoft.Maps.Location(metadata.Latitude, metadata.Longitude)
+                let hosPin = new Microsoft.Maps.Pushpin(hospitalLoc, {
+                    title: metadata.DisplayName,
+                    icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/hos.png',
+                    anchor: new Microsoft.Maps.Point(2,2)
+
+                })
+                map.entities.push(hosPin)
+                
+                let coordsAccuracy = 100;            
+                Microsoft.Maps.loadModule("Microsoft.Maps.SpatialMath", function (){
+                    let path = Microsoft.Maps.SpatialMath.getRegularPolygon(hosPin.getLocation(),
+                        coordsAccuracy, 36, Microsoft.Maps.SpatialMath.Meters);
+                    
+                    let poly = new Microsoft.Maps.Polygon(path);
+                        map.entities.push(poly);                     
+                });
+            });
+        } else {
+            console.warn(response);
+            console.log('No se encontraron hospitales cercanos.');
+        }        
+    }); 
+}                 
 
 let getLoc = document.getElementById('getLocBtn');
 getLoc.addEventListener('click', getCurrentLocation)
