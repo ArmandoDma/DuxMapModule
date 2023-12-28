@@ -11,12 +11,12 @@ let inBoxTemp =
 </div>`;
 /* arreglos para mostrar en la infobox*/
 let namesUserDos = [
-    { nombre: 'Junior H', rol: 'Doctor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p2.png' },
-    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p1.png' },
-    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p4.png' },
-    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p5.png' },
-    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p3.png' },
-    { nombre: 'Armando Dma', rol: 'Vendedor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p6.png' }
+    { nombre: 'Junior H', rol: 'Doctor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p2.png' },
+    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p1.png' },
+    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p4.png' },
+    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p5.png' },
+    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p3.png' },
+    { nombre: 'Armando Dma', rol: 'Vendedor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p6.png' }
 ];
 /*fin de arreglos para mostrar en la infobox */
 
@@ -61,7 +61,7 @@ function getCurrentLocation() {
                     let userLocation = randomLocations[index];
                     //generate multiples pushpins near current location
                     let locPointRandom = new Microsoft.Maps.Pushpin(userLocation, {
-                        title: user.rol,
+                        title: user.nombre,
                         subTitle: 'En linea',
                         icon: user.icon,
                         anchor: new Microsoft.Maps.Point(2, 2)                       
@@ -90,7 +90,7 @@ function getCurrentLocation() {
 function showUserIBox(user, location){
     //creating differents infoboxes for show when you clicked the pushpins                        
     let infoBox = new Microsoft.Maps.Infobox(location, {   
-        htmlContent: inBoxTemp.replace('{img}', user.icon).replace('{desc}', user.nombre).replace('{Rol}', user.rol).replace('{name}', user.nombre)
+        htmlContent: inBoxTemp.replace('{img}', user.icon).replace('{desc}', 'Online').replace('{Rol}', user.rol).replace('{name}', user.nombre)
     });
     
     infoBox.setMap(map);
@@ -117,7 +117,7 @@ function getNearByLocations(loc) {
                 const hospitalLoc = new Microsoft.Maps.Location(metadata.Latitude, metadata.Longitude)
                 let hosPin = new Microsoft.Maps.Pushpin(hospitalLoc, {
                     title: metadata.DisplayName,
-                    icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/hos.png',
+                    icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/hos.png',
                     anchor: new Microsoft.Maps.Point(2,2)
 
                 })
@@ -180,7 +180,8 @@ function getSlctValue(){
             filteredUsers.forEach((name) => {
                 let elmt = document.createElement('option');
                 elmt.innerHTML = name.nombre;
-                elmt.setAttribute('value', currentRole);
+                elmt.setAttribute('value', name.nombre);
+                elmt.setAttribute('class', 'optUser');
                 boxes.appendChild(elmt);
             })
             clickedSlct = true
@@ -206,35 +207,33 @@ let btnAddFil = document.getElementById('btnaddFil'),
 btnrevFil = document.getElementById('btnrevFil');
 
 function addFilter() {
-    let selectedRoles = Array.from(slcts).map((box) => box.value);
     let slcts = document.querySelectorAll('#slins');
-    slcts.forEach((boxes) =>{
-        selectedRoles.push(boxes.value)
-    })
-    let pushpins = map.entities.getPrimitives();   
-    namesUserDos.forEach((user) => {        
-        pushpins.forEach((pushpin) => {        
-            let pushpinRole = pushpin.getTitle();
-            if(pushpinRole === user.rol){            
+    let selectedRoles = Array.from(slcts).map((box) => box.value);
+    let pushpins = map.entities.getPrimitives();          
+    pushpins.forEach((pushpin) => {        
+        let pushpinRole = pushpin.getTitle();
+        if(selectedRoles.includes(pushpinRole)){
+            let user = namesUserDos.find((user) => user.nombre === pushpinRole);
+            if(user){            
                 pushpin.setOptions({visible: false})   
             }
-        })
-    })     
+        }
+    })
 }
 btnAddFil.addEventListener('click', addFilter)
 
 
 function revFil(){
-    let selectedRoles = [];
-    let slcts = document.querySelectorAll('#slins')
-    slcts.forEach((boxes) => {         
-        selectedRoles.push(boxes.value);
-    })
-    let pushPins = map.entities.getPrimitives();
-    pushPins.forEach((pin) => {
-        let pinRole = pin.entity.title;
-        if(selectedRoles.includes(pinRole)){
-            pin.setOptions({visible: true})
+    let slcts = document.querySelectorAll('#slins');
+    let selectedRoles = Array.from(slcts).map((box) => box.value);
+    let pushpins = map.entities.getPrimitives();          
+    pushpins.forEach((pushpin) => {        
+        let pushpinRole = pushpin.getTitle();
+        if(selectedRoles.includes(pushpinRole)){
+            let user = namesUserDos.find((user) => user.nombre === pushpinRole);
+            if(user){            
+                pushpin.setOptions({visible: true})   
+            }
         }
     })
 }
