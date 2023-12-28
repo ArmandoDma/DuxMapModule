@@ -10,21 +10,14 @@ let inBoxTemp =
 <p>Name: {name}</p>
 </div>`;
 /* arreglos para mostrar en la infobox*/
-let imgsToUse = [
-    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p1.png',
-    'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p2.png'
-]
-
-let namesUser = [
-    'Gabito Ballesteros',
-    'Junior H',
-]
-
-let rolesUsr = [
-    'Vendedor',
-    'Instrumentador',
-    'Doctor'
-]
+let namesUserDos = [
+    { nombre: 'Junior H', rol: 'Doctor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p2.png' },
+    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p1.png' },
+    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p4.png' },
+    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p5.png' },
+    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p3.png' },
+    { nombre: 'Armando Dma', rol: 'Vendedor', icon: 'C:/Users/arman/Downloads/Dux/DuxMapModule/sources/imgs/p6.png' }
+];
 /*fin de arreglos para mostrar en la infobox */
 
 window.addEventListener('load', () => {
@@ -44,7 +37,7 @@ function GetMap(){
 
 let sdsDataSourceUrl = 'http://spatial.virtualearth.net/REST/v1/data/Microsoft/PointsOfInterest?key=ArqG4VUXzrsxfVPNZDS7pu3DCTbBXf4NazO7xFtayC1EqP4PcnG4rn1XskILNby5&$format=json';
 
-function getCurrentLocation() {        
+function getCurrentLocation() {
     if(!permisoUbi){
         if(navigator.geolocation){           
             navigator.geolocation.getCurrentPosition((pos) => {                  
@@ -54,7 +47,7 @@ function getCurrentLocation() {
                 );
 
                 //pins created
-                let pin = new Microsoft.Maps.Pushpin(loc,{     
+                let pin = new Microsoft.Maps.Pushpin(loc,{
                     title: 'You',
                     color: '#4d88f9',
                     anchor: new Microsoft.Maps.Point(2,2)
@@ -63,37 +56,22 @@ function getCurrentLocation() {
         
                 map.setView({center: loc, zoom: 16});                                                
 
-                let randomLocations = addRandomLoc(loc, 2);
-        
-                randomLocations.forEach(function (ubi, index) {                                         
+                let randomLocations = addRandomLoc(loc, 6);
+                namesUserDos.forEach((user, index) => {    
+                    let userLocation = randomLocations[index];
                     //generate multiples pushpins near current location
-                    let locPointRandom = new Microsoft.Maps.Pushpin(ubi, {
-                        title: rolesUsr[index % rolesUsr.length],
+                    let locPointRandom = new Microsoft.Maps.Pushpin(userLocation, {
+                        title: user.rol,
                         subTitle: 'En linea',
-                        icon: imgsToUse[index % imgsToUse.length],
+                        icon: user.icon,
                         anchor: new Microsoft.Maps.Point(2, 2)                       
-                    });        
+                    });
                     map.entities.push(locPointRandom);
-
-                    //object properties variables
-                    let img = imgsToUse[index % imgsToUse.length];
-                    let desc = 'En linea';
-                    let Rol = rolesUsr[index % rolesUsr.length];
-                    let name= namesUser[index % namesUser.length]
-                    
                     //adding pushpins events
-                    Microsoft.Maps.Events.addHandler(locPointRandom, 'click',() => {  
-                        //creating differents infoboxes for show when you clicked the pushpins                        
-                        let infoBox = new Microsoft.Maps.Infobox(ubi, {   
-                            htmlContent: inBoxTemp.replace('{img}', img).replace('{desc}', desc).replace('{Rol}', Rol).replace('{name}', name)
-                        });
-                        
-                        infoBox.setMap(map);
-                        setTimeout(function(){                            
-                            infoBox.dispose()                        
-                        }, 2000)
-                    })                                           
-                });
+                    Microsoft.Maps.Events.addHandler(locPointRandom, 'click',() => {
+                        showUserIBox(user, userLocation)
+                    })
+                })                            
                 Microsoft.Maps.loadModule('Microsoft.Maps.SpatialDataService', 
                     function () {
                         getNearByLocations(loc);
@@ -108,6 +86,17 @@ function getCurrentLocation() {
             console.info('Ya has permitido la ubicación');
         }
     }
+}
+function showUserIBox(user, location){
+    //creating differents infoboxes for show when you clicked the pushpins                        
+    let infoBox = new Microsoft.Maps.Infobox(location, {   
+        htmlContent: inBoxTemp.replace('{img}', user.icon).replace('{desc}', user.nombre).replace('{Rol}', user.rol).replace('{name}', user.nombre)
+    });
+    
+    infoBox.setMap(map);
+    setTimeout(function(){                            
+        infoBox.dispose()                        
+    }, 2000)
 }
 
 function getNearByLocations(loc) {       
@@ -172,16 +161,82 @@ function addRandomLoc(center, count){
 }
 
 //getting and adding options from the select-boxes
+let getHospitals = [
+    'Clinica Estar Sana',
+    'Cruz Roja UAML',
+    'Clinica Santa Marta'
+];
+
 function getSlctValue(){
-    let slcts = document.querySelectorAll('#slins');    
-    slcts.forEach((boxes,index) => {    
-        boxes.innerHTML = ''; 
-        namesUser.forEach((name) => {
-            let elmt = document.createElement('option')    
-            elmt.innerHTML = name;        
-            elmt.setAttribute('value', name)            
-            boxes.appendChild(elmt)        
-        })
-            
+    let slcts = document.querySelectorAll('#slins');
+    slcts.forEach((boxes) => {   
+        let clickedSlct = false;                             
+        if(!clickedSlct){
+            boxes.innerHTML = '';
+            let currentRole = boxes.getAttribute('name')                
+            let filteredUsers = namesUserDos.filter((name) => {
+                return name.rol === currentRole;
+            });
+            filteredUsers.forEach((name) => {
+                let elmt = document.createElement('option');
+                elmt.innerHTML = name.nombre;
+                elmt.setAttribute('value', currentRole);
+                boxes.appendChild(elmt);
+            })
+            clickedSlct = true
+        }                     
+    })
+    let sHos = document.querySelector('#sHos');
+    let clickedSlct = false;        
+    sHos.addEventListener('click', () => {
+        if(!clickedSlct){
+            getHospitals.forEach((Hos) => {
+                let item = document.createElement('option')
+                item.innerHTML = Hos
+                item.setAttribute('value', Hos)
+                sHos.appendChild(item);            
+            })
+            clickedSlct = true;
+        }
     })
 }
+
+//adding filter to the elements
+let btnAddFil = document.getElementById('btnaddFil'),
+btnrevFil = document.getElementById('btnrevFil');
+
+function addFilter() {
+    let selectedRoles = Array.from(slcts).map((box) => box.value);
+    let slcts = document.querySelectorAll('#slins');
+    slcts.forEach((boxes) =>{
+        selectedRoles.push(boxes.value)
+    })
+    let pushpins = map.entities.getPrimitives();   
+    namesUserDos.forEach((user) => {        
+        pushpins.forEach((pushpin) => {        
+            let pushpinRole = pushpin.getTitle();
+            if(pushpinRole === user.rol){            
+                pushpin.setOptions({visible: false})   
+            }
+        })
+    })     
+}
+btnAddFil.addEventListener('click', addFilter)
+
+
+function revFil(){
+    let selectedRoles = [];
+    let slcts = document.querySelectorAll('#slins')
+    slcts.forEach((boxes) => {         
+        selectedRoles.push(boxes.value);
+    })
+    let pushPins = map.entities.getPrimitives();
+    pushPins.forEach((pin) => {
+        let pinRole = pin.entity.title;
+        if(selectedRoles.includes(pinRole)){
+            pin.setOptions({visible: true})
+        }
+    })
+}
+
+btnrevFil.addEventListener('click', revFil)
