@@ -174,11 +174,6 @@ function addRandomLoc(center, count){
 }
 
 //getting and adding options from the select-boxes
-let getHospitals = [
-    'Clínica Estar Sana',
-    'Cruz Roja UAML',
-    'Clínica Santa Martha'
-];
 let polCircles = [];
 
 function getSlctValue(){
