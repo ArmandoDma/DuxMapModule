@@ -9,14 +9,15 @@ let inBoxTemp =
 <p>Status: <br/> <span class="statusCorner"></span> {desc}</p>
 <p>Name: {name}</p>
 </div>`;
+
 /* arreglos para mostrar en la infobox*/
 let namesUserDos = [
-    { nombre: 'Junior H', rol: 'Doctor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p2.png' },
-    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p1.png' },
-    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p4.png' },
-    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p5.png' },
-    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p3.png' },
-    { nombre: 'Armando Dma', rol: 'Vendedor', icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/p6.png' }
+    { nombre: 'Junior H', rol: 'Doctor', icon: '../sources/imgs/p2.png' },
+    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: '../sources/imgs/p1.png' },
+    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: '../sources/imgs/p4.png' },
+    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: '../sources/imgs/p5.png' },
+    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: '../sources/imgs/p3.png' },
+    { nombre: 'Armando Dma', rol: 'Vendedor', icon: '../sources/imgs/p6.png' }
 ];
 /*fin de arreglos para mostrar en la infobox */
 
@@ -32,7 +33,11 @@ function GetMap(){
         center: new Microsoft.Maps.Location(25.762037871269943, -100.40887199563257),
         showLocateMeButton: false,
         showMapTypeSelector: false
-    });            
+    });      
+    
+    Microsoft.Maps.registerModule('HtmlPushpinLayerModule',
+    '../sources/js/HtmlPushpinLayerModule.js');
+
 }
 
 let sdsDataSourceUrl = 'http://spatial.virtualearth.net/REST/v1/data/Microsoft/PointsOfInterest?key=ArqG4VUXzrsxfVPNZDS7pu3DCTbBXf4NazO7xFtayC1EqP4PcnG4rn1XskILNby5&$format=json';
@@ -47,12 +52,17 @@ function getCurrentLocation() {
                 );
 
                 //pins created
-                let pin = new Microsoft.Maps.Pushpin(loc,{
-                    title: 'You',
-                    color: '#4d88f9',
-                    anchor: new Microsoft.Maps.Point(2,2)
-                });                                    
-                map.entities.push(pin);
+                Microsoft.Maps.loadModule('HtmlPushpinLayerModule', function(){       
+                         var htmlTemplate = `<div class="PoU">{text}</div>`;
+                         var pins = [
+                         new HtmlPushpin(loc, htmlTemplate.replace('{text}',
+                        ''), new Microsoft.Maps.Point(2,2))
+                         ];
+                         var layer = new HtmlPushpinLayer();
+                         layer.setPushpins(pins);
+                         map.layers.insert(layer);
+                        
+                });
         
                 map.setView({center: loc, zoom: 16});                                                
 
@@ -117,19 +127,22 @@ function getNearByLocations(loc) {
                 const hospitalLoc = new Microsoft.Maps.Location(metadata.Latitude, metadata.Longitude)
                 let hosPin = new Microsoft.Maps.Pushpin(hospitalLoc, {
                     title: metadata.DisplayName,
-                    icon: 'C:/Users/ITIDESKTOP/Downloads/DuxWS_Lap/DuxMapModule/sources/imgs/hos.png',
+                    icon: '../sources/imgs/hos.png',
                     anchor: new Microsoft.Maps.Point(2,2)
 
-                })
+                });                
                 map.entities.push(hosPin)
                 
                 let coordsAccuracy = 100;            
-                Microsoft.Maps.loadModule("Microsoft.Maps.SpatialMath", function (){
+                Microsoft.Maps.loadModule("Microsoft.Maps.SpatialMath", function (){                                  
                     let path = Microsoft.Maps.SpatialMath.getRegularPolygon(hosPin.getLocation(),
                         coordsAccuracy, 36, Microsoft.Maps.SpatialMath.Meters);
                     
-                    let poly = new Microsoft.Maps.Polygon(path);
+                    let poly = new Microsoft.Maps.Polygon(path,{
+                        title: metadata.DisplayName
+                    });
                         map.entities.push(poly);                     
+                        polCircles.push(poly)                    
                 });
             });
         } else {
@@ -162,10 +175,11 @@ function addRandomLoc(center, count){
 
 //getting and adding options from the select-boxes
 let getHospitals = [
-    'Clinica Estar Sana',
+    'Clínica Estar Sana',
     'Cruz Roja UAML',
-    'Clinica Santa Marta'
+    'Clínica Santa Martha'
 ];
+let polCircles = [];
 
 function getSlctValue(){
     let slcts = document.querySelectorAll('#slins');
@@ -190,12 +204,13 @@ function getSlctValue(){
     let sHos = document.querySelector('#sHos');
     let clickedSlct = false;        
     sHos.addEventListener('click', () => {
-        if(!clickedSlct){
-            getHospitals.forEach((Hos) => {
+        if(!clickedSlct){            
+            polCircles.forEach((Hos) => {
+                let HosTi = Hos.entity.title;
                 let item = document.createElement('option')
-                item.innerHTML = Hos
-                item.setAttribute('value', Hos)
-                sHos.appendChild(item);            
+                item.innerHTML = HosTi
+                item.setAttribute('value', HosTi)
+                sHos.appendChild(item);                    
             })
             clickedSlct = true;
         }
@@ -209,16 +224,27 @@ btnrevFil = document.getElementById('btnrevFil');
 function addFilter() {
     let slcts = document.querySelectorAll('#slins');
     let selectedRoles = Array.from(slcts).map((box) => box.value);
-    let pushpins = map.entities.getPrimitives();          
+    let sHos = document.getElementById('sHos').value;
+    let pushpins = map.entities.getPrimitives();   
     pushpins.forEach((pushpin) => {        
         let pushpinRole = pushpin.getTitle();
         if(selectedRoles.includes(pushpinRole)){
             let user = namesUserDos.find((user) => user.nombre === pushpinRole);
             if(user){            
-                pushpin.setOptions({visible: false})   
+                pushpin.setOptions({visible: false});
             }
         }
+        if(sHos === pushpinRole){
+            pushpin.setOptions({visible: false});
+        }
+    });
+    polCircles.forEach((polys) => {
+        let polTitle = polys.entity.title;
+        if(sHos === polTitle){
+            polys.setOptions({visible: false});
+        }
     })
+    
 }
 btnAddFil.addEventListener('click', addFilter)
 
@@ -226,6 +252,7 @@ btnAddFil.addEventListener('click', addFilter)
 function revFil(){
     let slcts = document.querySelectorAll('#slins');
     let selectedRoles = Array.from(slcts).map((box) => box.value);
+    let sHos = document.getElementById('sHos').value;
     let pushpins = map.entities.getPrimitives();          
     pushpins.forEach((pushpin) => {        
         let pushpinRole = pushpin.getTitle();
@@ -235,7 +262,10 @@ function revFil(){
                 pushpin.setOptions({visible: true})   
             }
         }
-    })
+        if(sHos === pushpinRole){
+            pushpin.setOptions({visible: true});
+        }
+    });
 }
 
 btnrevFil.addEventListener('click', revFil)
