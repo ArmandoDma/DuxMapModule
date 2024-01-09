@@ -86,7 +86,6 @@ body{
     grid-row: 2 span;
     overflow: hidden;
     background-color: transparent;
-    cursor: grab;
     position: relative;
 }
 .app-ct main .map{

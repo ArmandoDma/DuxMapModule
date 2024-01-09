@@ -10,20 +10,22 @@ let inBoxTemp =
 <p>Name: {name}</p>
 </div>`;
 
+import { dbRef } from "./firebase.js";
+import { child, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
 /* arreglos para mostrar en la infobox*/
 let namesUserDos = [
-    { nombre: 'Junior H', rol: 'Doctor', icon: '../sources/imgs/p2.png' },
-    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: '../sources/imgs/p1.png' },
-    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: '../sources/imgs/p4.png' },
-    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: '../sources/imgs/p5.png' },
-    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: '../sources/imgs/p3.png' },
-    { nombre: 'Armando Dma', rol: 'Vendedor', icon: '../sources/imgs/p6.png' }
+    { nombre: 'Junior H', rol: 'Doctor', icon: '../sources/imgs/p2.png', ubicacion:{lat: 25.781065551100525,lng: -100.59124756827454} },
+    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: '../sources/imgs/p1.png', ubicacion:{lat: 25.787306338117038,lng: -100.60448695175916} },
+    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: '../sources/imgs/p4.png', ubicacion:{lat: 25.799593738847886,lng: -100.64311076060034} },
+    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: '../sources/imgs/p5.png', ubicacion:{lat: 25.812498001857932,lng: -100.59556056045601} },
+    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: '../sources/imgs/p3.png', ubicacion:{lat: 25.78637893529236, lng:-100.57873774576365} },
+    { nombre: 'Armando Dma', rol: 'Vendedor', icon: '../sources/imgs/p6.png', ubicacion:{lat: 25.776891962378414 ,lng: -100.59502411857561} }
 ];
 /*fin de arreglos para mostrar en la infobox */
 
 window.addEventListener('load', () => {
-    GetMap()
-    getSlctValue()
+    GetMap();
 });
 
 function GetMap(){
@@ -63,30 +65,15 @@ function getCurrentLocation() {
                          map.layers.insert(layer);
                         
                 });
-        
-                map.setView({center: loc, zoom: 16});                                                
+                map.setView({center: loc, zoom: 16});                                                                
+                getSlctValue();
+                addUserRemote();
 
-                let randomLocations = addRandomLoc(loc, 6);
-                namesUserDos.forEach((user, index) => {    
-                    let userLocation = randomLocations[index];
-                    //generate multiples pushpins near current location
-                    let locPointRandom = new Microsoft.Maps.Pushpin(userLocation, {
-                        title: user.nombre,
-                        subTitle: 'En linea',
-                        icon: user.icon,
-                        anchor: new Microsoft.Maps.Point(2, 2)                       
-                    });
-                    map.entities.push(locPointRandom);
-                    //adding pushpins events
-                    Microsoft.Maps.Events.addHandler(locPointRandom, 'click',() => {
-                        showUserIBox(user, userLocation)
-                    })
-                })                            
                 Microsoft.Maps.loadModule('Microsoft.Maps.SpatialDataService', 
-                    function () {
-                        getNearByLocations(loc);
-                    }
-                );                   
+                function () {
+                    getNearByLocations(loc);
+                });
+
             }, (error) => {
                 console.error('Has denegado el acceso a tu ubicación, intentalo de nuevo.', error.message);
                 permisoUbi = false;
@@ -96,11 +83,42 @@ function getCurrentLocation() {
             console.info('Ya has permitido la ubicación');
         }
     }
+
 }
-function showUserIBox(user, location){
+
+function addUserRemote(){
+    get(child(dbRef, `users/`)).then((snapshot) => {
+        if (snapshot.exists()) {
+            snapshot.forEach((childSnapshots) =>{
+                let userData = childSnapshots.val()
+                let {lat, lng} = userData.ubicacion
+                const userPin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(lat, lng),{
+                    title: userData.nombre,
+                    subTitle: userData.rol,
+                    icon: userData.icon,
+                    anchor: new Microsoft.Maps.Point(2,2),
+                    draggable: true            
+                });
+                const location = userPin.getLocation()
+                map.entities.push(userPin);
+    
+                //adding pushpins events
+                Microsoft.Maps.Events.addHandler(userPin, 'click',() => {
+                    showUserIBox(userData, location)
+                })
+            })
+        } else {
+          console.log("No data available");
+        }
+      }).catch((error) => {
+        console.error(error);
+      });        
+}
+
+function showUserIBox(userData, location){
     //creating differents infoboxes for show when you clicked the pushpins                        
     let infoBox = new Microsoft.Maps.Infobox(location, {   
-        htmlContent: inBoxTemp.replace('{img}', user.icon).replace('{desc}', 'Online').replace('{Rol}', user.rol).replace('{name}', user.nombre)
+        htmlContent: inBoxTemp.replace('{img}', userData.icon).replace('{desc}', 'Online').replace('{Rol}', userData.rol).replace('{name}', userData.nombre)
     });
     
     infoBox.setMap(map);
@@ -115,7 +133,7 @@ function getNearByLocations(loc) {
         spatialFilter: { 
             spatialFilterType: 'nearby', 
             location: loc, 
-            radius: 25 
+            radius: 5 
         }, 
         filter: new 
         Microsoft.Maps.SpatialDataService.Filter('EntityTypeID','eq',8060)  
@@ -138,11 +156,11 @@ function getNearByLocations(loc) {
                     let path = Microsoft.Maps.SpatialMath.getRegularPolygon(hosPin.getLocation(),
                         coordsAccuracy, 36, Microsoft.Maps.SpatialMath.Meters);
                     
-                    let poly = new Microsoft.Maps.Polygon(path,{
+                    let poly = new Microsoft.Maps.Polygon(path, {
                         title: metadata.DisplayName
                     });
-                        map.entities.push(poly);                     
-                        polCircles.push(poly)                    
+                    map.entities.push(poly);
+                    polCircles.push(poly)             
                 });
             });
         } else {
@@ -154,24 +172,6 @@ function getNearByLocations(loc) {
 
 let getLoc = document.getElementById('getLocBtn');
 getLoc.addEventListener('click', getCurrentLocation)
-
-function addRandomLoc(center, count){
-    const radiusMeters = 1500;
-    const randomLocations = [];
-
-    for(let i =0; i < count; i++){
-        const randomDistance = Math.random() * radiusMeters;
-        const randomAngle = Math.random() * Math.PI;
-
-        const lat = center.latitude + (randomDistance / 111300) * Math.cos(randomAngle);
-        const lng = center.longitude + (randomDistance /(111300 * Math.cos(center.latitude * (Math.PI / 180)))) * Math.sin(randomAngle);
-
-        randomLocations.push(new Microsoft.Maps.Location(lat, lng));
-
-    }
-
-    return randomLocations;
-}
 
 //getting and adding options from the select-boxes
 let polCircles = [];
@@ -220,17 +220,21 @@ function addFilter() {
     let slcts = document.querySelectorAll('#slins');
     let selectedRoles = Array.from(slcts).map((box) => box.value);
     let sHos = document.getElementById('sHos').value;
-    let pushpins = map.entities.getPrimitives();   
+    let pushpins = map.entities.getPrimitives(); 
+    
+    pushpins.forEach((pushpin) => {
+        pushpin.setOptions({ visible: true });
+    });
     pushpins.forEach((pushpin) => {        
-        let pushpinRole = pushpin.getTitle();
+        let pushpinRole = pushpin.getTitle();  
         if(selectedRoles.includes(pushpinRole)){
-            let user = namesUserDos.find((user) => user.nombre === pushpinRole);
+            let user = namesUserDos.find((user) => user.nombre === pushpinRole);            
             if(user){            
                 pushpin.setOptions({visible: false});
             }
         }
-        if(sHos === pushpinRole){
-            pushpin.setOptions({visible: false});
+        if(sHos === pushpinRole){            
+            pushpin.setOptions({visible: false});            
         }
     });
     polCircles.forEach((polys) => {
