@@ -13,17 +13,6 @@ let inBoxTemp =
 import { dbRef } from "./firebase.js";
 import { child, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* arreglos para mostrar en la infobox*/
-let namesUserDos = [
-    { nombre: 'Junior H', rol: 'Doctor', icon: '../sources/imgs/p2.png', ubicacion:{lat: 25.781065551100525,lng: -100.59124756827454} },
-    { nombre: 'Gabito Ballesteros', rol: 'Instrumentador', icon: '../sources/imgs/p1.png', ubicacion:{lat: 25.787306338117038,lng: -100.60448695175916} },
-    { nombre: 'Peso Pluma', rol: 'Vendedor', icon: '../sources/imgs/p4.png', ubicacion:{lat: 25.799593738847886,lng: -100.64311076060034} },
-    { nombre: 'Fuerza Regida', rol: 'Doctor', icon: '../sources/imgs/p5.png', ubicacion:{lat: 25.812498001857932,lng: -100.59556056045601} },
-    { nombre: 'Natanael Cano', rol: 'Instrumentador', icon: '../sources/imgs/p3.png', ubicacion:{lat: 25.78637893529236, lng:-100.57873774576365} },
-    { nombre: 'Armando Dma', rol: 'Vendedor', icon: '../sources/imgs/p6.png', ubicacion:{lat: 25.776891962378414 ,lng: -100.59502411857561} }
-];
-/*fin de arreglos para mostrar en la infobox */
-
 window.addEventListener('load', () => {
     GetMap();
 });
@@ -88,9 +77,9 @@ function getCurrentLocation() {
 
 function addUserRemote(){
     get(child(dbRef, `users/`)).then((snapshot) => {
-        if (snapshot.exists()) {
+        if (snapshot.exists()) {                        
             snapshot.forEach((childSnapshots) =>{
-                let userData = childSnapshots.val()
+                let userData = childSnapshots.val() 
                 let {lat, lng} = userData.ubicacion
                 const userPin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(lat, lng),{
                     title: userData.nombre,
@@ -98,10 +87,10 @@ function addUserRemote(){
                     icon: userData.icon,
                     anchor: new Microsoft.Maps.Point(2,2),
                     draggable: true            
-                });
+                });        
                 const location = userPin.getLocation()
-                map.entities.push(userPin);
-    
+                map.entities.push(userPin);  
+            
                 //adding pushpins events
                 Microsoft.Maps.Events.addHandler(userPin, 'click',() => {
                     showUserIBox(userData, location)
@@ -181,18 +170,24 @@ function getSlctValue(){
     slcts.forEach((boxes) => {   
         let clickedSlct = false;                             
         if(!clickedSlct){
-            boxes.innerHTML = '';
-            let currentRole = boxes.getAttribute('name')                
-            let filteredUsers = namesUserDos.filter((name) => {
-                return name.rol === currentRole;
-            });
-            filteredUsers.forEach((name) => {
-                let elmt = document.createElement('option');
-                elmt.innerHTML = name.nombre;
-                elmt.setAttribute('value', name.nombre);
-                elmt.setAttribute('class', 'optUser');
-                boxes.appendChild(elmt);
-            })
+            boxes.innerHTML = '';       
+            let currentRole = boxes.getAttribute('name')
+            get(child(dbRef, 'users/')).then(snapshot => {
+                if(snapshot.exists()){
+                    let snapshots = Object.values(snapshot.val())                                                                       
+                    let filteredUsers = snapshots.filter((user) => {                
+                        return user.rol === currentRole;
+                    });
+
+                    filteredUsers.forEach((user) => {
+                        let elmt = document.createElement('option');
+                        elmt.innerHTML = user.nombre;
+                        elmt.setAttribute('value', user.nombre);
+                        elmt.setAttribute('class', 'optUser');
+                        boxes.appendChild(elmt);
+                    })                    
+                }
+            })                        
             clickedSlct = true
         }                     
     })
@@ -222,21 +217,26 @@ function addFilter() {
     let sHos = document.getElementById('sHos').value;
     let pushpins = map.entities.getPrimitives(); 
     
-    pushpins.forEach((pushpin) => {
-        pushpin.setOptions({ visible: true });
-    });
-    pushpins.forEach((pushpin) => {        
-        let pushpinRole = pushpin.getTitle();  
-        if(selectedRoles.includes(pushpinRole)){
-            let user = namesUserDos.find((user) => user.nombre === pushpinRole);            
-            if(user){            
-                pushpin.setOptions({visible: false});
-            }
+    get(child(dbRef, 'users/')).then(snapshot => {
+        if(snapshot.exists()){
+            let snapFil = Object.values(snapshot.val())
+            pushpins.forEach((pushpin) => {
+                pushpin.setOptions({ visible: true });
+            });
+            pushpins.forEach((pushpin) => {        
+                let pushpinRole = pushpin.getTitle();  
+                if(selectedRoles.includes(pushpinRole)){        
+                    let user = snapFil.find((user) => user.nombre === pushpinRole);            
+                    if(user){            
+                        pushpin.setOptions({visible: false});
+                    }
+                }
+                if(sHos === pushpinRole){            
+                    pushpin.setOptions({visible: false});            
+                }
+            });      
         }
-        if(sHos === pushpinRole){            
-            pushpin.setOptions({visible: false});            
-        }
-    });
+    })
     polCircles.forEach((polys) => {
         let polTitle = polys.entity.title;
         if(sHos === polTitle){
