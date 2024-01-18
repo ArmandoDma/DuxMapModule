@@ -1,4 +1,4 @@
-let map, results, queryURL;
+let map;
 let permisoUbi = false;
 let inBoxTemp = 
 `<div class="infoB" id="infoB">
@@ -234,9 +234,10 @@ function addFilter() {
                 if(sHos === pushpinRole){            
                     pushpin.setOptions({visible: false});            
                 }
-            });      
+            });                  
         }
     })
+
     polCircles.forEach((polys) => {
         let polTitle = polys.entity.title;
         if(sHos === polTitle){
@@ -248,23 +249,29 @@ function addFilter() {
 btnAddFil.addEventListener('click', addFilter)
 
 
-function revFil(){
+function revFil(){    
     let slcts = document.querySelectorAll('#slins');
     let selectedRoles = Array.from(slcts).map((box) => box.value);
     let sHos = document.getElementById('sHos').value;
-    let pushpins = map.entities.getPrimitives();          
-    pushpins.forEach((pushpin) => {        
-        let pushpinRole = pushpin.getTitle();
-        if(selectedRoles.includes(pushpinRole)){
-            let user = namesUserDos.find((user) => user.nombre === pushpinRole);
-            if(user){            
-                pushpin.setOptions({visible: true})   
-            }
+    let pushpins = map.entities.getPrimitives();   
+    
+    get(child(dbRef, 'users/')).then(snapshot => {
+        if(snapshot.exists()){
+            let snapFil = Object.values(snapshot.val())            
+            pushpins.forEach((pushpin) => {        
+                let pushpinRole = pushpin.getTitle();
+                if(selectedRoles.includes(pushpinRole)){
+                    let user = snapFil.find((user) => user.nombre === pushpinRole);
+                    if(user){            
+                        pushpin.setOptions({visible: true})   
+                    }
+                }
+                if(sHos === pushpinRole){
+                    pushpin.setOptions({visible: true});
+                }
+            });
         }
-        if(sHos === pushpinRole){
-            pushpin.setOptions({visible: true});
-        }
-    });
+    })
 }
 
 btnrevFil.addEventListener('click', revFil)

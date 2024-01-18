@@ -59,24 +59,6 @@ body{
     font-weight: 500;
     font-size: 1.125rem;
 }
-.app-ct .hdr .hdr-ct .hdr-nv .nvdr{
-    justify-content: flex-end;
-}
-.app-ct .hdr .hdr-ct .hdr-nv .nvdr li a{
-    font-weight: 500;
-    font-size: .875rem;
-    padding: .5rem 1rem;
-    border-radius: .25rem;
-    margin: 0 .5rem;
-}
-.app-ct .hdr .hdr-ct .hdr-nv .nvdr li:nth-child(1) a{
-    background-color: var(--prim-color);
-    color: var(--sec-color);
-}
-.app-ct .hdr .hdr-ct .hdr-nv .nvdr li:nth-child(2) a{
-    color: var(--prim-color);
-    background-color: var(--sec-color);
-}
 
 /*AQUI EMPIEZA EL MAIN*/
 .app-ct main{
